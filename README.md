@@ -1,5 +1,5 @@
 # Arabic Image Labeling
-**Arabic Image Labeling is a system for creating, editing, and enhancing Arabic image captioning.**
+**Arabic Image Labeling is a system for annotating images with arabic captioning.**
 
 
 ## Setup

@@ -8,18 +8,18 @@ from io import BytesIO
 from PIL import Image
 from streamlit import image
 from cairosvg import svg2png
+from pathlib import Path
 
 #
 
 st.set_page_config(
     initial_sidebar_state="expanded",
-    page_title="Arabic Image Labeling"
+    page_title="AIT Labeling"
 )
 
-st.title('AIL')
+st.title('AIT Labeling')
 
-Data_path = './labels/WIT/00000-of-00010/00000-of-00010.csv'
-url_gs = 'https://storage.googleapis.com'
+#url_gs = 'https://storage.googleapis.com'
 
 
 def load_data_pd(path,split='train',data_type='csv'):
@@ -32,6 +32,7 @@ def load_data_pd(path,split='train',data_type='csv'):
 
 
 def load_image(url,image_index):
+
     # download image from url and show it in streamlit
     if '.svg' in image_index:
         png = svg2png(url=url)
@@ -54,10 +55,8 @@ def drop_arabic(data):
 
 
 
-
 path = "./labels/"
 dataset_list = os.listdir('./labels/')
-
 dataset_key = st.sidebar.selectbox(
     "Dataset",
     dataset_list,
@@ -76,13 +75,14 @@ if dataset_key is not None:
             index=0,
             help="Select the subset to work on.",
         )
-        path = f'./labels/{dataset_key}/{subset_key}/*'
-        url_gs = f'{url_gs}/{dataset_key}/{subset_key}/'
+        path = f'./labels/{dataset_key}/{subset_key}/*.csv'
+        url_gs = f'./labels/{dataset_key}/{subset_key}/'
     else:
-        path = f'./labels/{dataset_key}/*'
-        url_gs = f'{url_gs}/{dataset_key}/'
+        path = f'./labels/{dataset_key}/*.csv'
+        url_gs = f'./labels/{dataset_key}/'
 
 dataset = load_data_pd(glob.glob(path)[0])
+
 dataset_org = dataset
 if st.sidebar.checkbox('non-arabic text',key='non-arabic'):
     dataset = drop_arabic(dataset)
@@ -104,6 +104,7 @@ example_index = st.sidebar.number_input(
             )
 
 # Load image name and its caption
+
 image_index = dataset.iloc[[example_index]]['Image_name'][example_index]
 caption_index = dataset.iloc[[example_index]]['Caption'][example_index]
 
@@ -111,14 +112,19 @@ caption_index = dataset.iloc[[example_index]]['Caption'][example_index]
 
 
 # Load image
+#with open(f'{url_gs}url.txt', 'rb') as f:
+#    url = f.readlines()
 
-image = load_image(url_gs+image_index,image_index)
-
+# Load image
+url=Path(f'{url_gs}url.txt').read_text().replace('\n', '')
+image = load_image(url+image_index,image_index)
 st.image(image,width=300)
 
-st.write("## Image name : ", image_index)
-#st.write("## caption:\n", caption_index )
 
+# Show image metadata 
+st.sidebar.write("## Metadata:\n", dataset.iloc[[example_index]].to_dict() )
+
+# Update image caption
 st.markdown("## Caption Editor")
 updated_caption_name = st.text_input("Caption",
                                     help= "Write a proper description of the image",

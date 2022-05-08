@@ -10,7 +10,6 @@
 
 3- Run the app from the terminal: 
 
-
 ```bash
 streamlit run app.py
 ```
